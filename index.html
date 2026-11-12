@@ -5,7 +5,7 @@
     function request(method, path, body, csrfToken) {
         return new Promise(function (resolve, reject) {
             var req = new XMLHttpRequest();
-            req.open(method, baseUrl + path, true);
+            req.open(method, new URL(path, baseUrl).href, true);
             req.withCredentials = true;
 
             if (body !== undefined) {
