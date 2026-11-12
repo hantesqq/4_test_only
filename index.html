@@ -41,12 +41,6 @@
             throw new Error('В ответе отсутствует csrf_token');
         }
 
-        // 2. Создаём тег.
-        await request('POST', '/v1/tag/create', {
-            text: 'appsec_test',
-            color: 'orange'
-        }, csrfToken);
-
         // 3. Выполняем POST с тем же CSRF-токеном.
         var tokenText = await request('POST', '/v1/organizations/create-token', {
             inn: '035878507724',
