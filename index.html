@@ -21,7 +21,13 @@ csrfReq.onload = function () {
     }
 
     var req = new XMLHttpRequest();
-    req.onload = reqListener;
+    req.onload = function () {
+    if (req.status >= 200 && req.status < 300) {
+        console.log('Тег создан:', req.responseText);
+    } else {
+        console.error('Ошибка создания тега:', req.status, req.responseText);
+    }
+};
     req.onerror = function () {
         console.error('Сетевая ошибка при создании тега');
     };
